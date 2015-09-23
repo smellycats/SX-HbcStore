@@ -6,9 +6,7 @@ from hbc import db
 
 class Users(db.Model):
     """用户"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), index=True)
     password = db.Column(db.String(128))
@@ -35,9 +33,7 @@ class Users(db.Model):
 
 class Scope(db.Model):
     """权限范围"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'scope'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
 
@@ -50,7 +46,6 @@ class Scope(db.Model):
 
 class Hbc(db.Model):
     """黄标车信息"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'hbc'
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
