@@ -8,7 +8,7 @@ from passlib.hash import sha256_crypt
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from hbc import db, app, api, auth, limiter, cache, logger, access_logger
-from models import Users, Scope, Hbc
+from models import Users, Scope, Hbc, Kkdd
 from help_func import *
 
 
@@ -253,25 +253,6 @@ class HbcImg(Resource):
             raise
         return {'total_count': len(items), 'items': items}, 200
 
-
-##class HbcApi(Resource):
-##    decorators = [limiter.limit("2400/minute"), verify_addr]
-##
-##    @verify_addr
-##    @verify_token
-##    def get(self, jgsj, hphm, kkdd):
-##        try:
-##            hbc = Hbc.query.filter(Hbc.date==jgsj[:10], Hbc.hphm==hphm,
-##                                   Hbc.jgsj==jgsj, Hbc.kkdd_id==kkdd).first()
-##        except Exception as e:
-##            logger.error(e)
-##
-##        if hbc:
-##            return {'id': hbc.id, 'jgsj': str(hbc.jgsj), 'hphm': hbc.hphm,
-##                    'kkdd_id': hbc.kkdd_id, 'imgpath': hbc.imgpath}, 200
-##        else:
-##            return {}, 200
-
         
 class HbcList(Resource):
     decorators = [limiter.limit("50000/hour")]
@@ -321,6 +302,23 @@ class HbcList(Resource):
         return result, 201
 
 
+class KkddList(Resource):
+    decorators = [limiter.limit("5000/hour")]
+
+    @verify_addr
+    @verify_token
+    def get(self, kkdd_id):
+        try:
+            kkdd_list = Kkdd.query.filter(Kkdd.kkdd_id.startswith(kkdd_id)).all()
+            items = []
+            for i in kkdd_list:
+                items.append({'kkdd_id': i.kkdd_id, 'kkdd_name': i.kkdd_name,
+                              'cf_id': i.cf_id})
+            return {'total_count': len(items), 'items': items}, 200
+        except Exception as e:
+            logger.error(e)
+            raise
+
 api.add_resource(Index, '/')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/user')
@@ -329,5 +327,6 @@ api.add_resource(TokenList, '/token')
 api.add_resource(HbcImg, '/hbc/img/<string:date>/<string:hphm>/<string:kkdd>')
 # api.add_resource(HbcApi, '/hbc/<string:jgsj>/<string:hphm>/<string:kkdd>')
 api.add_resource(HbcList, '/hbc')
+api.add_resource(KkddList, '/kkdd/<string:kkdd_id>')
 
 
