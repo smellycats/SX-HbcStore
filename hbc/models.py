@@ -76,4 +76,20 @@ class Hbc(db.Model):
         return '<Hbc %r>' % self.id
 
 
+class Kkdd(db.Model):
+    """卡口地点"""
+    __tablename__ = 'kkdd'
+    kkdd_id = db.Column(db.String(9), primary_key=True)
+    kkdd_name = db.Column(db.String(64))
+    cf_id = db.Column(db.String(3))
+
+    def __init__(self, kkdd_id, kkdd_name, cf_id):
+        self.kkdd_id = kkdd_id
+        self.kkdd_name = kkdd_name
+        self.cf_id = cf_id
+
+    def __repr__(self):
+        return '<Kkdd %r>' % self.kkdd_id
+
+
 
