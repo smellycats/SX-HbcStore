@@ -20,7 +20,7 @@ def verify_addr(f):
             pass
         else:
             return {'status': '403.6',
-                    'error': u'禁止访问:客户端的 IP 地址被拒绝'}, 403
+                    'message': u'禁止访问:客户端的 IP 地址被拒绝'}, 403
         return f(*args, **kwargs)
     return decorated_function
 
@@ -64,7 +64,7 @@ def verify_scope(f):
         if 'all' in g.scope or scope in g.scope:
             pass
         else:
-            return {'status': 405, 'error': 'Method Not Allowed'}, 405
+            return {}, 405
         return f(*args, **kwargs)
     return decorated_function
 
@@ -73,11 +73,12 @@ class Index(Resource):
     
     def get(self):
         return {
-            'user_url': '%suser{/:user_id}' % (request.url_root),
+            'user_url': '%suser{/user_id}' % (request.url_root),
             'scope_url': '%suser/scope' % (request.url_root),
             'token_url': '%stoken' % (request.url_root),
-            'hbcimg_url': '%shbc/img/:date/:hphm/:kkdd' % (request.url_root),
-            'hbc_url': '%shbc' % (request.url_root)
+            'hbcimg_url': '%shbc/img{/date}{/hphm}{/kkdd}' % (request.url_root),
+            'hbc_url': '%shbc' % (request.url_root),
+            'hbc_url': '%skkdd{/kkdd_id}' % (request.url_root)
             #'hbc_url': 'http://%s:%s/hbc/:jgsj/:hphm/:kkdd' % (request.remote_addr, app.config['PORT'])
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
