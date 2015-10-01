@@ -78,7 +78,7 @@ class Index(Resource):
             'token_url': '%stoken' % (request.url_root),
             'hbcimg_url': '%shbc/img{/date}{/hphm}{/kkdd}' % (request.url_root),
             'hbc_url': '%shbc' % (request.url_root),
-            'hbc_url': '%skkdd{/kkdd_id}' % (request.url_root)
+            'kkdd_url': '%skkdd{/kkdd_id}' % (request.url_root)
             #'hbc_url': 'http://%s:%s/hbc/:jgsj/:hphm/:kkdd' % (request.remote_addr, app.config['PORT'])
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
