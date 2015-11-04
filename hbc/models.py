@@ -82,14 +82,32 @@ class Kkdd(db.Model):
     kkdd_id = db.Column(db.String(9), primary_key=True)
     kkdd_name = db.Column(db.String(64))
     cf_id = db.Column(db.String(3))
+    sbdh = db.Column(db.String(128))
+    banned = db.Column(db.Integer, default=0)
 
-    def __init__(self, kkdd_id, kkdd_name, cf_id):
+    def __init__(self, kkdd_id, kkdd_name, cf_id, sbdh, banned=0):
         self.kkdd_id = kkdd_id
         self.kkdd_name = kkdd_name
         self.cf_id = cf_id
+        self.sbdh = sbdh
+        self.banned = banned
 
     def __repr__(self):
         return '<Kkdd %r>' % self.kkdd_id
 
 
+class WZImg(db.Model):
+    """黄标车违章标志图片"""
+    __tablename__ = 'hbc_img'
+    id = db.Column(db.Integer, primary_key=True)
+    kkdd_id = db.Column(db.String(9))
+    fxbh_code = db.Column(db.String(2))
+    img_path = db.Column(db.String(128))
 
+    def __init__(self, kkdd_id, fxbh_code, img_path):
+        self.kkdd_id = kkdd_id
+        self.fxbh_code = fxbh_code
+        self.img_path = img_path
+
+    def __repr__(self):
+        return '<HbcImg %r>' % self.id

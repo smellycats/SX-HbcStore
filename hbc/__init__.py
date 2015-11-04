@@ -39,6 +39,7 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 from hbc import views
 
+
 @app.after_request
 def after_request(response):
     """访问信息写入日志"""
@@ -52,17 +53,20 @@ def after_request(response):
 
     return response
 
+
 @app.errorhandler(404)
 def page_not_found(error):
     return jsonify({'message': 'Not Found'}), 404,
     {'Content-Type': 'application/json; charset=utf-8',
      'Server': app.config['SERVER']}
 
+
 @app.errorhandler(405)
 def method_not_allow(error):
     return jsonify({'message': 'Method Not Allowed'}), 405,
     {'Content-Type': 'application/json; charset=utf-8',
      'Server': app.config['SERVER']}
+
 
 @app.errorhandler(500)
 def internal_server_error(error):

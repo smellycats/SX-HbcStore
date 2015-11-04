@@ -39,6 +39,7 @@ def online_logging(log_file_name):
     rthandler.setFormatter(formatter)
     logger.addHandler(rthandler)
 
+
 def access_logging(log_file_name):
     """Init for logging"""
     path = os.path.split(log_file_name)
