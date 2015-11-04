@@ -259,6 +259,22 @@ class HbcImg(Resource):
         return {'total_count': len(items), 'items': items}, 200
 
 
+class HbcCount(Resource):
+    #decorators = [limiter.limit("50000/hour")]
+
+    #@verify_addr
+    #@verify_token
+    #@verify_scope('hbc_get')
+    def get(self, date, kkdd):
+        try:
+            hbc_count = Hbc.query.filter(
+                Hbc.date == date, Hbc.kkdd_id.startswith(kkdd)).count()
+        except Exception as e:
+            logger.error(e)
+            raise
+        return {'total_count': hbc_count}, 200
+
+
 class HbcList(Resource):
     decorators = [limiter.limit("50000/hour")]
 
@@ -353,7 +369,7 @@ api.add_resource(UserList, '/user')
 api.add_resource(ScopeList, '/user/scope')
 api.add_resource(TokenList, '/token')
 api.add_resource(HbcImg, '/hbc/img/<string:date>/<string:hphm>/<string:kkdd>')
-# api.add_resource(HbcApi, '/hbc/<string:jgsj>/<string:hphm>/<string:kkdd>')
+api.add_resource(HbcCount, '/hbc/count/<string:date>/<string:kkdd>')
 api.add_resource(HbcList, '/hbc')
 api.add_resource(KkddList, '/kkdd/<string:kkdd_id>')
 api.add_resource(WZImgList, '/wzimg/<string:kkdd_id>')
