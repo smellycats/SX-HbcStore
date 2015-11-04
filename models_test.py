@@ -2,7 +2,7 @@
 import arrow
 
 from hbc import db
-from hbc.models import Users, Scope, Hbc, Kkdd, HbcImg
+from hbc.models import Users, Scope, Hbc, Kkdd, WZImg
 
 def test_scope_get():
     scope = Scope.query.all()
@@ -41,7 +41,7 @@ def test_kkdd():
         print i.sbdh
 
 def test_hbcimg():
-    hi = HbcImg.query.filter(HbcImg.kkdd_id.startswith('441305')).all()
+    hi = WZImg.query.filter(WZImg.kkdd_id.startswith('441324')).all()
     #print hi
     #hi = HbcImg.query.filter_by(kkdd_id='441302016').all()
     img_dict = {}

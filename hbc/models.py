@@ -110,4 +110,4 @@ class WZImg(db.Model):
         self.img_path = img_path
 
     def __repr__(self):
-        return '<HbcImg %r>' % self.id
+        return '<WZImg %r>' % self.id
