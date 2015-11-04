@@ -2,7 +2,7 @@
 import arrow
 
 from hbc import db
-from hbc.models import Hbc, Users, Scope
+from hbc.models import Users, Scope, Hbc, Kkdd, WZImg
 
 def test_scope_get():
     scope = Scope.query.all()
@@ -35,6 +35,19 @@ def test_hbcimg_get():
                            Hbc.imgpath != '').all()
     print hbc
 
+def test_kkdd():
+    kkdd = Kkdd.query.filter(Kkdd.kkdd_id.startswith('441302')).all()
+    for i in kkdd:
+        print i.sbdh
+
+def test_hbcimg():
+    hi = WZImg.query.filter(WZImg.kkdd_id.startswith('441324')).all()
+    #print hi
+    #hi = HbcImg.query.filter_by(kkdd_id='441302016').all()
+    img_dict = {}
+    for i in hi:
+        img_dict[(i.kkdd_id, i.fxbh_code)] = i.img_path
+    return img_dict
 
 if __name__ == '__main__':
     #hpys_test()
@@ -42,8 +55,9 @@ if __name__ == '__main__':
     #test_scope_get()
     #test_user_get()
     #test_hbc_get()
-    test_hbc_add()
+    #test_hbc_add()
     #test_hbcimg_get()
-
+    #test_kkdd()
+    print test_hbcimg()
 
 

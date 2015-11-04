@@ -6,9 +6,7 @@ from hbc import db
 
 class Users(db.Model):
     """用户"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), index=True)
     password = db.Column(db.String(128))
@@ -35,9 +33,7 @@ class Users(db.Model):
 
 class Scope(db.Model):
     """权限范围"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'scope'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
 
@@ -50,7 +46,6 @@ class Scope(db.Model):
 
 class Hbc(db.Model):
     """黄标车信息"""
-    __bind_key__ = 'hbc_store'
     __tablename__ = 'hbc'
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
@@ -81,4 +76,38 @@ class Hbc(db.Model):
         return '<Hbc %r>' % self.id
 
 
+class Kkdd(db.Model):
+    """卡口地点"""
+    __tablename__ = 'kkdd'
+    kkdd_id = db.Column(db.String(9), primary_key=True)
+    kkdd_name = db.Column(db.String(64))
+    cf_id = db.Column(db.String(3))
+    sbdh = db.Column(db.String(128))
+    banned = db.Column(db.Integer, default=0)
 
+    def __init__(self, kkdd_id, kkdd_name, cf_id, sbdh, banned=0):
+        self.kkdd_id = kkdd_id
+        self.kkdd_name = kkdd_name
+        self.cf_id = cf_id
+        self.sbdh = sbdh
+        self.banned = banned
+
+    def __repr__(self):
+        return '<Kkdd %r>' % self.kkdd_id
+
+
+class WZImg(db.Model):
+    """黄标车违章标志图片"""
+    __tablename__ = 'hbc_img'
+    id = db.Column(db.Integer, primary_key=True)
+    kkdd_id = db.Column(db.String(9))
+    fxbh_code = db.Column(db.String(2))
+    img_path = db.Column(db.String(128))
+
+    def __init__(self, kkdd_id, fxbh_code, img_path):
+        self.kkdd_id = kkdd_id
+        self.fxbh_code = fxbh_code
+        self.img_path = img_path
+
+    def __repr__(self):
+        return '<WZImg %r>' % self.id

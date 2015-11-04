@@ -8,18 +8,9 @@ from passlib.hash import sha256_crypt
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from hbc import db, app, api, auth, limiter, cache, logger, access_logger
-from models import Users, Scope, Hbc
+from models import Users, Scope, Hbc, Kkdd, WZImg
 from help_func import *
 
-@app.after_request
-def after_request(response):
-    """访问信息写入日志"""
-    access_logger.info('%s - - [%s] "%s %s HTTP/1.1" %s %s'
-                       % (request.remote_addr,
-                          arrow.now().format('DD/MMM/YYYY:HH:mm:ss ZZ'),
-                          request.method, request.path, response.status_code,
-                          response.content_length))
-    return response
 
 def verify_addr(f):
     """IP地址白名单"""
@@ -29,9 +20,10 @@ def verify_addr(f):
             pass
         else:
             return {'status': '403.6',
-                    'error': u'禁止访问:客户端的 IP 地址被拒绝'}, 403
+                    'message': u'禁止访问:客户端的 IP 地址被拒绝'}, 403
         return f(*args, **kwargs)
     return decorated_function
+
 
 @auth.verify_password
 def verify_password(username, password):
@@ -62,40 +54,40 @@ def verify_token(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def verify_scope(f):
-    """权限范围验证装饰器"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            scope = '_'.join([request.path[1:], request.method.lower()])
-        except Exception as e:
-            logger.error(e)
-        if 'all' in g.scope or scope in g.scope:
-            pass
-        else:
-            return {'status': 405, 'error': 'Method Not Allowed'}, 405
-        return f(*args, **kwargs)
-    return decorated_function
+
+def verify_scope(scope):
+    def scope(f):
+        """权限范围验证装饰器"""
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'all' in g.scope or scope in g.scope:
+                return f(*args, **kwargs)
+            else:
+                return {}, 405
+        return decorated_function
+    return scope
 
 
 class Index(Resource):
-    
+
     def get(self):
         return {
-            'user_url': '%suser{/:user_id}' % (request.url_root),
+            'user_url': '%suser{/user_id}' % (request.url_root),
             'scope_url': '%suser/scope' % (request.url_root),
             'token_url': '%stoken' % (request.url_root),
-            'hbcimg_url': '%shbc/img/:date/:hphm/:kkdd' % (request.url_root),
-            'hbc_url': '%shbc' % (request.url_root)
+            'hbcimg_url': '%shbc/img{/date}{/hphm}{/kkdd}' % (request.url_root),
+            'hbc_url': '%shbc' % (request.url_root),
+            'kkdd_url': '%skkdd{/kkdd_id}' % (request.url_root)
             #'hbc_url': 'http://%s:%s/hbc/:jgsj/:hphm/:kkdd' % (request.remote_addr, app.config['PORT'])
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
 
 class User(Resource):
-    decorators = [verify_token, limiter.limit("5000/hours")]
+    decorators = [limiter.limit("5000/hours")]
 
     @verify_addr
-    @verify_scope
+    @verify_token
+    @verify_scope('user_get')
     def get(self, user_id):
         user = Users.query.filter_by(id=user_id, banned=0).first()
         if user:
@@ -109,7 +101,8 @@ class User(Resource):
             return {}, 404
 
     @verify_addr
-    @verify_scope
+    @verify_token
+    @verify_scope('user_patch')
     def post(self, user_id):
         parser = reqparse.RequestParser()
         parser.add_argument('scope', type=unicode, required=True,
@@ -125,7 +118,8 @@ class User(Resource):
         # 求交集后的权限
         u_scope = ','.join(all_scope & request_scope)
 
-        db.session.query(Users).filter_by(id=user_id).update({'scope': u_scope, 'date_modified': arrow.now().datetime})
+        db.session.query(Users).filter_by(id=user_id).update(
+            {'scope': u_scope, 'date_modified': arrow.now().datetime})
         db.session.commit()
 
         user = Users.query.filter_by(id=user_id).first()
@@ -142,10 +136,11 @@ class User(Resource):
 
 
 class UserList(Resource):
-    decorators = [verify_token, limiter.limit("50/minute")]
+    decorators = [limiter.limit("50/minute")]
 
     @verify_addr
-    @verify_scope
+    @verify_token
+    @verify_scope('user_post')
     def post(self):
         if not request.json.get('username', None):
             error = {'resource': 'Token', 'field': 'username',
@@ -189,7 +184,7 @@ class ScopeList(Resource):
 
     @verify_addr
     @verify_token
-    @verify_scope
+    @verify_scope('scope_get')
     def get(self):
         scope = Scope.query.all()
         items = []
@@ -247,9 +242,10 @@ class HbcImg(Resource):
 
     @verify_addr
     @verify_token
+    @verify_scope('hbc_get')
     def get(self, date, hphm, kkdd):
         try:
-            hbc_list = Hbc.query.filter(Hbc.date==date, Hbc.hphm==hphm,
+            hbc_list = Hbc.query.filter(Hbc.date == date, Hbc.hphm == hphm,
                                         Hbc.kkdd_id.startswith(kkdd),
                                         Hbc.imgpath != '').all()
             items = []
@@ -263,30 +259,12 @@ class HbcImg(Resource):
         return {'total_count': len(items), 'items': items}, 200
 
 
-##class HbcApi(Resource):
-##    decorators = [limiter.limit("2400/minute"), verify_addr]
-##
-##    @verify_addr
-##    @verify_token
-##    def get(self, jgsj, hphm, kkdd):
-##        try:
-##            hbc = Hbc.query.filter(Hbc.date==jgsj[:10], Hbc.hphm==hphm,
-##                                   Hbc.jgsj==jgsj, Hbc.kkdd_id==kkdd).first()
-##        except Exception as e:
-##            logger.error(e)
-##
-##        if hbc:
-##            return {'id': hbc.id, 'jgsj': str(hbc.jgsj), 'hphm': hbc.hphm,
-##                    'kkdd_id': hbc.kkdd_id, 'imgpath': hbc.imgpath}, 200
-##        else:
-##            return {}, 200
-
-        
 class HbcList(Resource):
     decorators = [limiter.limit("50000/hour")]
 
     @verify_addr
     @verify_token
+    @verify_scope('hbc_post')
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('jgsj', type=unicode, required=True,
@@ -330,6 +308,45 @@ class HbcList(Resource):
         return result, 201
 
 
+class KkddList(Resource):
+    decorators = [limiter.limit("5000/hour")]
+
+    @verify_addr
+    @verify_token
+    @verify_scope('kkdd_get')
+    def get(self, kkdd_id):
+        try:
+            kkdd_list = Kkdd.query.filter(
+                Kkdd.kkdd_id.startswith(kkdd_id)).all()
+            items = []
+            for i in kkdd_list:
+                items.append({'kkdd_id': i.kkdd_id, 'kkdd_name': i.kkdd_name,
+                              'cf_id': i.cf_id, 'sbdh': sbdh})
+            return {'total_count': len(items), 'items': items}, 200
+        except Exception as e:
+            logger.error(e)
+            raise
+
+class WZImgList(Resource):
+    decorators = [limiter.limit("5000/hour")]
+
+    @verify_addr
+    #@verify_token
+    #@verify_scope('hbc_get')
+    def get(self, kkdd_id):
+        try:
+            hbc_list = WZImg.query.filter(
+                WZImg.kkdd_id.startswith(kkdd_id)).all()
+            items = []
+            for i in hbc_list:
+                items.append({'kkdd_id': i.kkdd_id, 'fxbh_code': i.fxbh_code,
+                              'img_path': i.img_path})
+            return {'total_count': len(items), 'items': items}, 200
+        except Exception as e:
+            print (e)
+            logger.error(e)
+            raise
+
 api.add_resource(Index, '/')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/user')
@@ -338,5 +355,5 @@ api.add_resource(TokenList, '/token')
 api.add_resource(HbcImg, '/hbc/img/<string:date>/<string:hphm>/<string:kkdd>')
 # api.add_resource(HbcApi, '/hbc/<string:jgsj>/<string:hphm>/<string:kkdd>')
 api.add_resource(HbcList, '/hbc')
-
-
+api.add_resource(KkddList, '/kkdd/<string:kkdd_id>')
+api.add_resource(WZImgList, '/wzimg/<string:kkdd_id>')
