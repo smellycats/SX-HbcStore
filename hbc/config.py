@@ -19,7 +19,7 @@ class Config(object):
     # 数据库连接绑定 dict
     SQLALCHEMY_BINDS = {}
     # 连接池大小 int
-    SQLALCHEMY_POOL_SIZE = 20
+    SQLALCHEMY_POOL_SIZE = 5
     # 用户权限范围 dict
     SCOPE_USER = {}
     # 白名单启用 bool
