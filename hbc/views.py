@@ -76,9 +76,10 @@ class Index(Resource):
             'scope_url': '%suser/scope' % (request.url_root),
             'token_url': '%stoken' % (request.url_root),
             'hbcimg_url': '%shbc/img{/date}{/hphm}{/kkdd}' % (request.url_root),
+            'hbccount_url': '%hbc/count{/date}{/kkdd}' % (request.url_root)
             'hbc_url': '%shbc' % (request.url_root),
-            'kkdd_url': '%skkdd{/kkdd_id}' % (request.url_root)
-            #'hbc_url': 'http://%s:%s/hbc/:jgsj/:hphm/:kkdd' % (request.remote_addr, app.config['PORT'])
+            'kkdd_url': '%skkdd{/kkdd}' % (request.url_root)
+            'wzimg_url': '%swzimg{/kkdd}' % (request.url_root)
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
 
@@ -272,7 +273,7 @@ class HbcCount(Resource):
         except Exception as e:
             logger.error(e)
             raise
-        return {'total_count': hbc_count}, 200
+        return {'count': hbc_count}, 200
 
 
 class HbcList(Resource):
@@ -356,10 +357,11 @@ class WZImgList(Resource):
             items = []
             for i in hbc_list:
                 items.append({'kkdd_id': i.kkdd_id, 'fxbh_code': i.fxbh_code,
-                              'img_path': i.img_path})
+                              'img_url': 'http://%s/images/%s/%s' % (
+                                  request.remote_addr, kkdd_id, i.img_path)})
             return {'total_count': len(items), 'items': items}, 200
         except Exception as e:
-            print (e)
+            print e
             logger.error(e)
             raise
 
