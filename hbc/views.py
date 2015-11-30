@@ -76,9 +76,9 @@ class Index(Resource):
             'scope_url': '%suser/scope' % (request.url_root),
             'token_url': '%stoken' % (request.url_root),
             'hbcimg_url': '%shbc/img{/date}{/hphm}{/kkdd}' % (request.url_root),
-            'hbccount_url': '%hbc/count{/date}{/kkdd}' % (request.url_root)
+            'hbccount_url': '%shbc/count{/date}{/kkdd}' % (request.url_root),
             'hbc_url': '%shbc' % (request.url_root),
-            'kkdd_url': '%skkdd{/kkdd}' % (request.url_root)
+            'kkdd_url': '%skkdd{/kkdd}' % (request.url_root),
             'wzimg_url': '%swzimg{/kkdd}' % (request.url_root)
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
@@ -242,8 +242,8 @@ class HbcImg(Resource):
     decorators = [limiter.limit("50000/hour")]
 
     @verify_addr
-    @verify_token
-    @verify_scope('hbc_get')
+    #@verify_token
+    #@verify_scope('hbc_get')
     def get(self, date, hphm, kkdd):
         try:
             hbc_list = Hbc.query.filter(Hbc.date == date, Hbc.hphm == hphm,
@@ -261,9 +261,9 @@ class HbcImg(Resource):
 
 
 class HbcCount(Resource):
-    #decorators = [limiter.limit("50000/hour")]
+    decorators = [limiter.limit("50000/hour")]
 
-    #@verify_addr
+    @verify_addr
     #@verify_token
     #@verify_scope('hbc_get')
     def get(self, date, kkdd):
@@ -280,8 +280,8 @@ class HbcList(Resource):
     decorators = [limiter.limit("50000/hour")]
 
     @verify_addr
-    @verify_token
-    @verify_scope('hbc_post')
+    #@verify_token
+    #@verify_scope('hbc_post')
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('jgsj', type=unicode, required=True,
@@ -329,8 +329,8 @@ class KkddList(Resource):
     decorators = [limiter.limit("5000/hour")]
 
     @verify_addr
-    @verify_token
-    @verify_scope('kkdd_get')
+    #@verify_token
+    #@verify_scope('kkdd_get')
     def get(self, kkdd_id):
         try:
             kkdd_list = Kkdd.query.filter(
