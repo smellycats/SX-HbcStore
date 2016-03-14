@@ -111,3 +111,18 @@ class WZImg(db.Model):
 
     def __repr__(self):
         return '<WZImg %r>' % self.id
+
+
+class WhiteList(db.Model):
+    __tablename__ = 'white_list'
+    id = db.Column(db.Integer, primary_key=True)
+    hphm = db.Column(db.String(16))
+    banned = db.Column(db.Integer, default=0)
+
+    def __init__(self, hphm, banned=0):
+        self.hphm = hphm
+        self.banned = banned
+
+    def __repr__(self):
+        return '<WhiteList %r>' % self.id
+    

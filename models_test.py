@@ -2,7 +2,7 @@
 import arrow
 
 from hbc import db
-from hbc.models import Users, Scope, Hbc, Kkdd, WZImg
+from hbc.models import Users, Scope, Hbc, Kkdd, WZImg, WhiteList
 
 def test_scope_get():
     scope = Scope.query.all()
@@ -41,13 +41,18 @@ def test_kkdd():
         print i.sbdh
 
 def test_hbcimg():
-    hi = WZImg.query.filter(WZImg.kkdd_id.startswith('441324')).all()
+    hi = WZImg.query.filter(WZImg.kkdd_id.startswith('441305')).all()
     #print hi
     #hi = HbcImg.query.filter_by(kkdd_id='441302016').all()
     img_dict = {}
     for i in hi:
         img_dict[(i.kkdd_id, i.fxbh_code)] = i.img_path
     return img_dict
+
+def test_get_whitelist():
+    wl = WhiteList.query.all()
+    for i in wl:
+        print i.hphm
 
 if __name__ == '__main__':
     #hpys_test()
@@ -58,6 +63,7 @@ if __name__ == '__main__':
     #test_hbc_add()
     #test_hbcimg_get()
     #test_kkdd()
-    print test_hbcimg()
+    #print test_hbcimg()
+    test_get_whitelist()
 
 

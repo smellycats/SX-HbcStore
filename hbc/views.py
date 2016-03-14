@@ -8,7 +8,7 @@ from passlib.hash import sha256_crypt
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from hbc import db, app, api, auth, limiter, cache, logger, access_logger
-from models import Users, Scope, Hbc, Kkdd, WZImg
+from models import Users, Scope, Hbc, Kkdd, WZImg, WhiteList
 from help_func import *
 
 
@@ -365,6 +365,20 @@ class WZImgList(Resource):
             logger.error(e)
             raise
 
+class WhiteListAPI(Resource):
+    decorators = [limiter.limit("5000/hour")]
+
+    @verify_addr
+    #@verify_token
+    #@verify_scope('hbc_get')
+    def get(self):
+        try:
+            items = [i.hphm for i in WhiteList.query.filter(WhiteList.banned==0).all()]
+            return {'total_count': len(items), 'items': items}, 200
+        except Exception as e:
+            logger.error(e)
+            raise
+
 api.add_resource(Index, '/')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/user')
@@ -375,3 +389,4 @@ api.add_resource(HbcCount, '/hbc/count/<string:date>/<string:kkdd>')
 api.add_resource(HbcList, '/hbc')
 api.add_resource(KkddList, '/kkdd/<string:kkdd_id>')
 api.add_resource(WZImgList, '/wzimg/<string:kkdd_id>')
+api.add_resource(WhiteListAPI, '/whitelist')
