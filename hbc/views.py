@@ -79,7 +79,8 @@ class Index(Resource):
             'hbccount_url': '%shbc/count{/date}{/kkdd}' % (request.url_root),
             'hbc_url': '%shbc' % (request.url_root),
             'kkdd_url': '%skkdd{/kkdd}' % (request.url_root),
-            'wzimg_url': '%swzimg{/kkdd}' % (request.url_root)
+            'wzimg_url': '%swzimg{/kkdd}' % (request.url_root),
+            'whitelist_url': '%whitelist' % (request.url_root)
         }, 200, {'Cache-Control': 'public, max-age=60, s-maxage=60'}
 
 
@@ -338,7 +339,7 @@ class KkddList(Resource):
             items = []
             for i in kkdd_list:
                 items.append({'kkdd_id': i.kkdd_id, 'kkdd_name': i.kkdd_name,
-                              'cf_id': i.cf_id, 'sbdh': sbdh})
+                              'cf_id': i.cf_id, 'sbdh': i.sbdh})
             return {'total_count': len(items), 'items': items}, 200
         except Exception as e:
             logger.error(e)
